@@ -33,6 +33,7 @@ public:
     ArrowheadESPFS& getArrowheadESPFS();
 
     bool begin();
+    int loop();
 };
 
 

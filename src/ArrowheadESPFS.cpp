@@ -28,6 +28,19 @@ void ArrowheadESPFS::loadConfigFile(const char *configFileName) {
     }
 }
 
+void ArrowheadESPFS::loadSSLConfigFile(const char *sslFileName) {
+    bool sslConfigLoaded = false;
+    debugPrintln(String("Trying to load ") + sslFileName);
+
+    sslConfigLoaded = loadSSLConfig(sslFileName);
+
+    if(!sslConfigLoaded) {
+        debugPrintln("Could not load SSL config...");
+    } else {
+        debugPrintln("SSL Config loaded");
+    }
+}
+
 bool ArrowheadESPFS::loadNetworkConfig(const char *fileName) {
     File networkConfig = loadFile(fileName);
     StaticJsonDocument <JSON_SIZE> doc;
@@ -39,14 +52,55 @@ bool ArrowheadESPFS::loadNetworkConfig(const char *fileName) {
         return false;
     }
 
+    strlcpy(_ssid, doc["ssid"], sizeof(_ssid));
+    strlcpy(_password, doc["password"], sizeof(_password));
+
     _networkData = {
-            ssid: doc["ssid"],
-            password: doc["password"]
+            ssid: _ssid,
+            password: _password
     };
 
     debugPrintln("Reading config file with values: ");
     debugPrintln(String("SSID: ") + _networkData.ssid);
     debugPrintln(String("Password: ") + _networkData.password);
+    return true;
+}
+
+bool ArrowheadESPFS::loadSSLConfig(const char *fileName) {
+    File sslConfig = loadFile(fileName);
+
+    StaticJsonDocument<JSON_SIZE> doc;
+    if(!deserializeJSONFromFile(sslConfig, &doc)) {
+        return false;
+    }
+
+    if(validateSSLConfig(&doc) != GOOD_CONFIG) {
+        return false;
+    }
+
+    if(doc.containsKey("insecure")){
+        _insecure = atoi(doc["insecure"]);
+    }
+    strlcpy(_filenameCa, doc["filenameCa"], sizeof(_filenameCa));
+    strlcpy(_filenamePk, doc["filenamePk"], sizeof(_filenamePk));
+    strlcpy(_filenameCl, doc["filenameCl"], sizeof(_filenameCl));
+
+    _sslData = {
+            insecure : _insecure,
+            filenameCa : _filenameCa,
+            filenamePk : _filenamePk,
+            filenameCl : _filenameCl
+    };
+
+    debugPrintln("Reading config file with values: ");
+    debugPrintln(String("CA filename: ") + _sslData.filenameCa);
+    debugPrintln(String("PK filename: ") + _sslData.filenamePk);
+    debugPrintln(String("CL filename: ") + _sslData.filenameCl);
+    debugPrintln(String("Insecure: ") + _sslData.insecure);
+
+    debugPrintln("Reading config file with values: ");
+    debugPrintln(String("SSID: ") + getNetInfo().ssid);
+    debugPrintln(String("Password: ") + getNetInfo().password);
     return true;
 }
 
@@ -82,7 +136,35 @@ int8_t ArrowheadESPFS::validateConfig(JsonDocument *doc) {
         }
 
         debugPrintln("Config is incomplete");
+        return INCOMPLETE;
+    }
 
+    debugPrintln("Config is good");
+    return GOOD_CONFIG;
+}
+
+int8_t ArrowheadESPFS::validateSSLConfig(JsonDocument *doc) {
+    if(doc->size() == 0) {
+        return NO_CONFIG;
+    }
+
+    if(!doc->containsKey("filenameCa") ||
+       !doc->containsKey("filenamePk") ||
+       !doc->containsKey("filenameCl")) {
+
+        if(!doc->containsKey("filenameCa")) {
+            debugPrintln("JSON - Missing filenameCa");
+        }
+
+        if(!doc->containsKey("filenamePk")) {
+            debugPrintln("JSON - Missing filenamePk");
+        }
+
+        if(!doc->containsKey("filenameCl")) {
+            debugPrintln("JSON - Missing filenameCl");
+        }
+
+        debugPrintln("SSL Config is incomplete");
         return INCOMPLETE;
     }
 
@@ -107,4 +189,8 @@ File ArrowheadESPFS::loadFile(const char *fileName) {
 
 netInfo ArrowheadESPFS::getNetInfo() {
     return _networkData;
+}
+
+sslInfo ArrowheadESPFS::getSSLInfo() {
+    return _sslData;
 }

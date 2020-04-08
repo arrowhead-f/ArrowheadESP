@@ -45,3 +45,7 @@ bool ArrowheadESP::begin(){
 
     return true;
 }
+
+int ArrowheadESP::loop() {
+    // TODO
+}
