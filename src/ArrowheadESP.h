@@ -25,10 +25,14 @@
 class ArrowheadESP {
 private:
     ArrowheadESPFS arrowheadEspFs;
+
+    bool setupWiFi();
 public:
     ArrowheadESP();
 
-    ArrowheadESPFS getArrowheadESPFS();
+    ArrowheadESPFS& getArrowheadESPFS();
+
+    bool begin();
 };
 
 

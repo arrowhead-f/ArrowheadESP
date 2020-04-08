@@ -46,7 +46,7 @@ bool ArrowheadESPFS::loadNetworkConfig(const char *fileName) {
 
     debugPrintln("Reading config file with values: ");
     debugPrintln(String("SSID: ") + _networkData.ssid);
-    debugPrintln(String("Network Pass: ") + _networkData.pass);
+    debugPrintln(String("Password: ") + _networkData.password);
     return true;
 }
 
@@ -103,4 +103,8 @@ File ArrowheadESPFS::loadFile(const char *fileName) {
         debugPrintln(String("Successfully opened ") + fileName);
     }
     return file;
+}
+
+netInfo ArrowheadESPFS::getNetInfo() {
+    return _networkData;
 }

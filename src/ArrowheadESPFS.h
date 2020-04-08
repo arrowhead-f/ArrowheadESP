@@ -46,6 +46,8 @@ public:
     void loadConfigFile(const char *configFileName);
 
     void loadSSLConfigFile(const char *sslFileName);
+
+    netInfo getNetInfo();
 };
 
 

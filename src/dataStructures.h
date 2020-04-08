@@ -9,14 +9,14 @@ enum connStatus { NO_CONNECTION, WIFI };
 
 struct netInfo {
     const char* ssid;
-    const char* pass;
+    const char* password;
 
     netInfo() {}
 
     netInfo(const char* _ssid,
-            const char* _pass) :
+            const char* _password) :
             ssid(_ssid),
-            pass(_pass) {}
+            password(_password) {}
 };
 
 struct sslInfo {
