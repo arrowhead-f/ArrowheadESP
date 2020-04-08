@@ -92,15 +92,15 @@ bool ArrowheadESPFS::loadSSLConfig(const char *fileName) {
             filenameCl : _filenameCl
     };
 
+    _ca = loadFile(_filenameCa);
+    _pk = loadFile(_filenamePk);
+    _cl = loadFile(_filenameCl);
+
     debugPrintln("Reading config file with values: ");
     debugPrintln(String("CA filename: ") + _sslData.filenameCa);
     debugPrintln(String("PK filename: ") + _sslData.filenamePk);
     debugPrintln(String("CL filename: ") + _sslData.filenameCl);
     debugPrintln(String("Insecure: ") + _sslData.insecure);
-
-    debugPrintln("Reading config file with values: ");
-    debugPrintln(String("SSID: ") + getNetInfo().ssid);
-    debugPrintln(String("Password: ") + getNetInfo().password);
     return true;
 }
 
@@ -193,4 +193,16 @@ netInfo ArrowheadESPFS::getNetInfo() {
 
 sslInfo ArrowheadESPFS::getSSLInfo() {
     return _sslData;
+}
+
+File& ArrowheadESPFS::getCA() {
+    return _ca;
+}
+
+File& ArrowheadESPFS::getPK() {
+    return _pk;
+}
+
+File& ArrowheadESPFS::getCl() {
+    return _cl;
 }

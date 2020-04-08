@@ -26,7 +26,14 @@ class ArrowheadESP {
 private:
     ArrowheadESPFS arrowheadEspFs;
 
+    WiFiUDP ntpUDP;
+    // NTPClient timeClient(ntpUDP); not possible :(
+    WiFiClientSecure _wiFiClientSecure;
+
+    WiFiClientSecure& getWiFiClientSecure();
+
     bool setupWiFi();
+    bool setupCertificates();
 public:
     ArrowheadESP();
 

@@ -30,6 +30,17 @@ private:
     netInfo _networkData;
     sslInfo _sslData;
 
+    char _ssid[32];
+    char _password[32];
+    int _insecure = 0;
+    char _filenameCa[32];
+    char _filenamePk[32];
+    char _filenameCl[32];
+
+    File _ca;
+    File _pk;
+    File _cl;
+
     bool loadNetworkConfig(const char *fileName);
     bool loadSSLConfig(const char *fileName);
 
@@ -39,14 +50,6 @@ private:
     int8_t validateSSLConfig(JsonDocument *doc);
 
     bool deserializeJSONFromFile(File file, JsonDocument *doc);
-
-    char _ssid[32];
-    char _password[32];
-    int _insecure = 0;
-    char _filenameCa[32];
-    char _filenamePk[32];
-    char _filenameCl[32];
-
 public:
     ArrowheadESPFS();
 
@@ -55,6 +58,10 @@ public:
 
     netInfo getNetInfo();
     sslInfo getSSLInfo();
+
+    File& getCA();
+    File& getPK();
+    File& getCl();
 };
 
 
