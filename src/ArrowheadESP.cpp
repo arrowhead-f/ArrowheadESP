@@ -8,4 +8,10 @@
 // Constructors
 // #######################################
 
-ArrowheadESP::ArrowheadESP() {}
+ArrowheadESP::ArrowheadESP() {
+    debugPrintln("ArrowheadESP Default Constructor");
+}
+
+ArrowheadESPFS ArrowheadESP::getArrowheadESPFS() {
+    return arrowheadEspFs;
+}

@@ -6,20 +6,29 @@
 #define ARROWHEADESP_ARROWHEADESP_H
 
 #ifdef ESP8266
-// TODO
+#include <ESP8266WiFi.h>
+#include <WiFiUdp.h>
 #endif
 
 #ifdef ESP32
 // TODO
 #endif
 
+// Library includes
+#include <WiFiClientSecure.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
+// Header Includes
 #include "ArrowheadESPFS.h"
 
-
 class ArrowheadESP {
+private:
+    ArrowheadESPFS arrowheadEspFs;
 public:
     ArrowheadESP();
-private:
+
+    ArrowheadESPFS getArrowheadESPFS();
 };
 
 
