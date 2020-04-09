@@ -17,8 +17,4 @@
 #define debugPrintln(x) {;} //debug off
 #endif
 
-class Util {
-};
-
-
 #endif //ARROWHEADESP_UTIL_H

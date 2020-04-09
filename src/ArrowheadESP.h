@@ -24,22 +24,65 @@
 
 class ArrowheadESP {
 private:
+    /**
+     * ArrowheadESPFS instance
+     */
     ArrowheadESPFS arrowheadEspFs;
 
+    /**
+     * UDP capability
+     */
     WiFiUDP ntpUDP;
     // NTPClient timeClient(ntpUDP); not possible :(
+
+    /**
+     * SSL capable HTTP client
+     */
     WiFiClientSecure _wiFiClientSecure;
 
+    /**
+     * Returns the instance of the HTTP client
+     *
+     * @return
+     */
     WiFiClientSecure& getWiFiClientSecure();
 
+    /**
+     * Sets up the connection to the WiFi network
+     *
+     * @return success of the connection attempt
+     */
     bool setupWiFi();
+    /**
+     * Sets up the certificates to the HTTP client
+     *
+     * @return
+     */
     bool setupCertificates();
 public:
+    /**
+     * Default constructor of the library
+     */
     ArrowheadESP();
 
+    /**
+     * Returns the instance of the ArrowheadESPFS
+     * @return
+     */
     ArrowheadESPFS& getArrowheadESPFS();
 
+    /**
+     * Starts the operation of the library
+     *
+     * @return
+     */
     bool begin();
+
+    /**
+     * Keeps all connection alive
+     *
+     * @return
+     */
     int loop();
 };
 

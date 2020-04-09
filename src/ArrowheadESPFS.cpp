@@ -4,45 +4,28 @@
 
 #include "ArrowheadESPFS.h"
 
+// #######################################
+// Constructors
+// #######################################
+
 ArrowheadESPFS::ArrowheadESPFS() {
     debugPrintln("ArrowheadESPFS Default Constructor");
+    // Start the filesystem
     if (!SPIFFS.begin()) {
         debugPrintln("Failed to mount file system");
         return;
     } else {
         debugPrintln("File system mounted");
     }
-
 }
 
-void ArrowheadESPFS::loadConfigFile(const char *configFileName) {
-    bool configLoaded = false;
-    debugPrintln(String("Trying to load ") + configFileName);
-
-    configLoaded = loadNetworkConfig(configFileName);
-
-    if (!configLoaded) {
-        debugPrintln("Could not load config...");
-    } else {
-        debugPrintln("Config loaded");
-    }
-}
-
-void ArrowheadESPFS::loadSSLConfigFile(const char *sslFileName) {
-    bool sslConfigLoaded = false;
-    debugPrintln(String("Trying to load ") + sslFileName);
-
-    sslConfigLoaded = loadSSLConfig(sslFileName);
-
-    if(!sslConfigLoaded) {
-        debugPrintln("Could not load SSL config...");
-    } else {
-        debugPrintln("SSL Config loaded");
-    }
-}
+// #######################################
+// Private functions
+// #######################################
 
 bool ArrowheadESPFS::loadNetworkConfig(const char *fileName) {
     File networkConfig = loadFile(fileName);
+
     StaticJsonDocument <JSON_SIZE> doc;
     if (!deserializeJSONFromFile(networkConfig, &doc)) {
         return false;
@@ -52,9 +35,11 @@ bool ArrowheadESPFS::loadNetworkConfig(const char *fileName) {
         return false;
     }
 
+    // copy the values into variables, so their value won't change if the doc is changed
     strlcpy(_ssid, doc["ssid"], sizeof(_ssid));
     strlcpy(_password, doc["password"], sizeof(_password));
 
+    // assign value to the struct
     _networkData = {
             ssid: _ssid,
             password: _password
@@ -81,10 +66,13 @@ bool ArrowheadESPFS::loadSSLConfig(const char *fileName) {
     if(doc.containsKey("insecure")){
         _insecure = atoi(doc["insecure"]);
     }
+
+    // copy the values into variables, so their value won't change if the doc is changed
     strlcpy(_filenameCa, doc["filenameCa"], sizeof(_filenameCa));
     strlcpy(_filenamePk, doc["filenamePk"], sizeof(_filenamePk));
     strlcpy(_filenameCl, doc["filenameCl"], sizeof(_filenameCl));
 
+    // assign value to the struct
     _sslData = {
             insecure : _insecure,
             filenameCa : _filenameCa,
@@ -92,6 +80,7 @@ bool ArrowheadESPFS::loadSSLConfig(const char *fileName) {
             filenameCl : _filenameCl
     };
 
+    // load the certificates
     _ca = loadFile(_filenameCa);
     _pk = loadFile(_filenamePk);
     _cl = loadFile(_filenameCl);
@@ -104,22 +93,20 @@ bool ArrowheadESPFS::loadSSLConfig(const char *fileName) {
     return true;
 }
 
-bool ArrowheadESPFS::deserializeJSONFromFile(File file, JsonDocument *doc) {
-    size_t size = file.size();
-    debugPrintln(String("JSON File Size: ") + size);
-    if (size > JSON_SIZE) {
-        debugPrintln("JSON File too large - returning false");
-        return false;
-    }
+File ArrowheadESPFS::loadFile(const char *fileName) {
+    debugPrintln(String("Opening file: ") + fileName);
+    //open the file as read only
+    File file = SPIFFS.open(String("/") + fileName, "r");
 
-    DeserializationError error = deserializeJson(*doc, file);
-    if (error && size != 0) {
-        debugPrintln("JSON File corrupt/could not be deserialized - returning false");
-        return false;
+    //check to make sure, opening was possible
+    if (!file) {
+        debugPrintln(String("Failed to open ") + fileName);
+        file.close();
+    } else {
+        debugPrintln(String("Successfully opened ") + fileName);
     }
-
-    debugPrintln("JSON File successfully parsed");
-    return true;
+    // could this be improved?
+    return file;
 }
 
 int8_t ArrowheadESPFS::validateConfig(JsonDocument *doc) {
@@ -172,19 +159,52 @@ int8_t ArrowheadESPFS::validateSSLConfig(JsonDocument *doc) {
     return GOOD_CONFIG;
 }
 
-File ArrowheadESPFS::loadFile(const char *fileName) {
-    debugPrintln(String("Opening file: ") + fileName);
-    //open the file as read only
-    File file = SPIFFS.open(String("/") + fileName, "r");
-
-    //check to make sure, opening was possible
-    if (!file) {
-        debugPrintln(String("Failed to open ") + fileName);
-        file.close();
-    } else {
-        debugPrintln(String("Successfully opened ") + fileName);
+bool ArrowheadESPFS::deserializeJSONFromFile(File file, JsonDocument *doc) {
+    size_t size = file.size();
+    debugPrintln(String("JSON File Size: ") + size);
+    if (size > JSON_SIZE) {
+        debugPrintln("JSON File too large - returning false");
+        return false;
     }
-    return file;
+
+    DeserializationError error = deserializeJson(*doc, file);
+    if (error && size != 0) {
+        debugPrintln("JSON File corrupt/could not be deserialized - returning false");
+        return false;
+    }
+
+    debugPrintln("JSON File successfully parsed");
+    return true;
+}
+
+// #######################################
+// Public functions
+// #######################################
+
+void ArrowheadESPFS::loadConfigFile(const char *configFileName) {
+    bool configLoaded = false;
+    debugPrintln(String("Trying to load ") + configFileName);
+
+    configLoaded = loadNetworkConfig(configFileName);
+
+    if (!configLoaded) {
+        debugPrintln("Could not load config...");
+    } else {
+        debugPrintln("Config loaded");
+    }
+}
+
+void ArrowheadESPFS::loadSSLConfigFile(const char *sslFileName) {
+    bool sslConfigLoaded = false;
+    debugPrintln(String("Trying to load ") + sslFileName);
+
+    sslConfigLoaded = loadSSLConfig(sslFileName);
+
+    if(!sslConfigLoaded) {
+        debugPrintln("Could not load SSL config...");
+    } else {
+        debugPrintln("SSL Config loaded");
+    }
 }
 
 netInfo ArrowheadESPFS::getNetInfo() {

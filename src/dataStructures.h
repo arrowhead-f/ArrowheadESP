@@ -7,6 +7,9 @@
 
 enum connStatus { NO_CONNECTION, WIFI };
 
+/**
+ * Struct for storing network related data
+ */
 struct netInfo {
     const char* ssid;
     const char* password;
@@ -19,6 +22,9 @@ struct netInfo {
             password(_password) {}
 };
 
+/**
+ * Struct for storing ssl related data
+ */
 struct sslInfo {
     int insecure; // used to disable CA verification
     const char* filenameCa;
