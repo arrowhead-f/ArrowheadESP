@@ -35,6 +35,12 @@ private:
     ArrowheadHTTPSClient _httpsClient;
 
     /**
+     * ServiceRegistry host and port
+     */
+    const char* _srHost;
+    int _srPort;
+
+    /**
      * UDP capability
      */
     WiFiUDP _ntpUDP;
@@ -71,6 +77,63 @@ public:
      * @return
      */
     ArrowheadHTTPSClient& getArrowheadHTTPSClient();
+
+    /**
+     * Sets the host and port of the Service Registry
+     *
+     * @param host
+     * @param port
+     */
+    void setServiceRegistryAddress(const char *host, int port);
+
+    /**
+     * ServiceRegistry Service implementations
+     */
+
+    /**
+     * Echo
+     * @return
+     */
+    int serviceRegistryEcho();
+    /**
+     * Echo
+     *
+     * @param response
+     * @return
+     */
+    int serviceRegistryEcho(String* response);
+    /**
+     * Query
+     *
+     * @param body
+     * @return
+     */
+    int serviceRegistryQuery(const char *body);
+    /**
+     * Query
+     *
+     * @param body
+     * @param response
+     * @return
+     */
+    int serviceRegistryQuery(const char *body, String* response);
+    /**
+     * Register
+     *
+     * @param body
+     * @return
+     */
+    int serviceRegistryRegister(const char *body);
+    /**
+     * Register
+     *
+     * @param body
+     * @param response
+     * @return
+     */
+    int serviceRegistryRegister(const char *body, String* response);
+    // TODO
+    int serviceRegistryUnregister();
 
     /**
      * Starts the operation of the library

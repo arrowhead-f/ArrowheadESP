@@ -1,5 +1,5 @@
 //
-// Created by Szvetlin Tanyi on 2020. 04. 06..
+// Created by Szvetlin Tanyi on 2020. 04. 06.
 //
 
 #ifndef ARROWHEADESP_UTIL_H

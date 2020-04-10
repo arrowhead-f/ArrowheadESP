@@ -1,5 +1,5 @@
 //
-// Created by Szvetlin Tanyi on 2020. 04. 07..
+// Created by Szvetlin Tanyi on 2020. 04. 07.
 //
 
 #ifndef ARROWHEADESP_DATASTRUCTURES_H

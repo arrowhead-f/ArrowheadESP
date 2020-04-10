@@ -103,6 +103,35 @@ ArrowheadHTTPSClient& ArrowheadESP::getArrowheadHTTPSClient() {
     return _httpsClient;
 }
 
+void ArrowheadESP::setServiceRegistryAddress(const char *host, int port) {
+    this->_srHost = host;
+    this->_srPort = port;
+}
+
+int ArrowheadESP::serviceRegistryEcho() {
+    return getArrowheadHTTPSClient().get(_srHost, _srPort, "/serviceregistry/echo", NULL, NULL);
+}
+
+int ArrowheadESP::serviceRegistryEcho(String *response) {
+    return getArrowheadHTTPSClient().get(_srHost, _srPort, "/serviceregistry/echo", NULL, response);
+}
+
+int ArrowheadESP::serviceRegistryQuery(const char* body) {
+    return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/query", body);
+}
+
+int ArrowheadESP::serviceRegistryQuery(const char* body, String *response) {
+    return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/query", body, response);
+}
+
+int ArrowheadESP::serviceRegistryRegister(const char* body) {
+    return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/register", body);
+}
+
+int ArrowheadESP::serviceRegistryRegister(const char* body, String *response) {
+    return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/register", body, response);
+}
+
 bool ArrowheadESP::begin(){
     debugPrintln("ArrowheadESP - Begin");
     setupWiFi();

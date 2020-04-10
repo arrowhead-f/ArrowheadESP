@@ -1,5 +1,5 @@
 //
-// Created by Szvetlin Tanyi on 2020. 04. 09..
+// Created by Szvetlin Tanyi on 2020. 04. 09.
 //
 
 #ifndef ARROWHEADESP_ARROWHEADHTTPSCLIENT_H
@@ -27,6 +27,17 @@ public:
     * @return
     */
     WiFiClientSecure& getWiFiClientSecure();
+
+    int request(const char* method, const char* host, int port, const char* path, const char* query, const char* body, String* response);
+    int readResponse(String* response);
+
+    int get(const char* address, int port, const char* path, const char* query);
+    int get(const char* address, int port, const char* path, const char* query, String* response);
+
+    int post(const char* address, int port, const char* path, const char* body);
+    int post(const char* address, int port, const char* path, const char* body, String* response);
+
+    // TODO patch, put, delete
 };
 
 
