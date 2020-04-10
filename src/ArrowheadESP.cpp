@@ -16,10 +16,6 @@ ArrowheadESP::ArrowheadESP() {
 // Private functions
 // #######################################
 
-WiFiClientSecure& ArrowheadESP::getWiFiClientSecure() {
-    return _wiFiClientSecure;
-}
-
 bool ArrowheadESP::setupWiFi() {
     // We have to check that everything is available before proceeding
     if(!getArrowheadESPFS().getNetInfo().ssid || !getArrowheadESPFS().getNetInfo().password) {
@@ -52,26 +48,26 @@ bool ArrowheadESP::setupCertificates() {
 
     // By default 'pool.ntp.org' is used with 60 seconds update interval and
     // no offset
-    NTPClient timeClient(ntpUDP);
+    NTPClient timeClient(_ntpUDP);
     timeClient.begin();
     while (!timeClient.update()) {
         timeClient.forceUpdate();
     }
     // Set the proper time for Certificate validation
-    getWiFiClientSecure().setX509Time(timeClient.getEpochTime());
+    getArrowheadHTTPSClient().getWiFiClientSecure().setX509Time(timeClient.getEpochTime());
     // Setting the request timeout
-    getWiFiClientSecure().setTimeout(5000);
+    getArrowheadHTTPSClient().getWiFiClientSecure().setTimeout(5000);
     // Setting the buffer sizes
-    getWiFiClientSecure().setBufferSizes(512,512);
+    getArrowheadHTTPSClient().getWiFiClientSecure().setBufferSizes(512,512);
 
     // Disable X509 Certificate verification
     if(getArrowheadESPFS().getSSLInfo().insecure){
-        getWiFiClientSecure().setInsecure();
+        getArrowheadHTTPSClient().getWiFiClientSecure().setInsecure();
         debugPrintln("Disabled CA verification");
     }
 
     // Load CA certificate
-    if(getWiFiClientSecure().loadCACert(getArrowheadESPFS().getCA())){
+    if(getArrowheadHTTPSClient().getWiFiClientSecure().loadCACert(getArrowheadESPFS().getCA())){
         debugPrintln("CA cert loaded");
     } else {
         debugPrintln("CA cert failed");
@@ -79,7 +75,7 @@ bool ArrowheadESP::setupCertificates() {
     delay(1000);
 
     // Load Client certificate
-    if(getWiFiClientSecure().loadCertificate(getArrowheadESPFS().getCl())){
+    if(getArrowheadHTTPSClient().getWiFiClientSecure().loadCertificate(getArrowheadESPFS().getCl())){
         debugPrintln("Client cert loaded");
     } else {
         debugPrintln("Client cert failed");
@@ -87,7 +83,7 @@ bool ArrowheadESP::setupCertificates() {
     delay(1000);
 
     // Load Private key
-    if(getWiFiClientSecure().loadPrivateKey(getArrowheadESPFS().getPK())){
+    if(getArrowheadHTTPSClient().getWiFiClientSecure().loadPrivateKey(getArrowheadESPFS().getPK())){
         debugPrintln("Private key loaded");
     } else {
         debugPrintln("Private key failed");
@@ -100,7 +96,11 @@ bool ArrowheadESP::setupCertificates() {
 // #######################################
 
 ArrowheadESPFS& ArrowheadESP::getArrowheadESPFS() {
-    return arrowheadEspFs;
+    return _arrowheadEspFs;
+}
+
+ArrowheadHTTPSClient& ArrowheadESP::getArrowheadHTTPSClient() {
+    return _httpsClient;
 }
 
 bool ArrowheadESP::begin(){

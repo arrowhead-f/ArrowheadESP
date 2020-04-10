@@ -15,37 +15,30 @@
 #endif
 
 // Library includes
-#include <WiFiClientSecure.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
 // Header Includes
-#include "ArrowheadESPFS.h"
+#include "ArrowheadESPFS/ArrowheadESPFS.h"
+#include "ArrowheadHTTPSClient/ArrowheadHTTPSClient.h"
 
 class ArrowheadESP {
 private:
     /**
      * ArrowheadESPFS instance
      */
-    ArrowheadESPFS arrowheadEspFs;
+    ArrowheadESPFS _arrowheadEspFs;
+
+    /**
+     * ArrowheadHTTPSClient instance
+     */
+    ArrowheadHTTPSClient _httpsClient;
 
     /**
      * UDP capability
      */
-    WiFiUDP ntpUDP;
+    WiFiUDP _ntpUDP;
     // NTPClient timeClient(ntpUDP); not possible :(
-
-    /**
-     * SSL capable HTTP client
-     */
-    WiFiClientSecure _wiFiClientSecure;
-
-    /**
-     * Returns the instance of the HTTP client
-     *
-     * @return
-     */
-    WiFiClientSecure& getWiFiClientSecure();
 
     /**
      * Sets up the connection to the WiFi network
@@ -67,9 +60,17 @@ public:
 
     /**
      * Returns the instance of the ArrowheadESPFS
+     *
      * @return
      */
     ArrowheadESPFS& getArrowheadESPFS();
+
+    /**
+     * Returns the instance of the ArrowheadHTTPSClient
+     *
+     * @return
+     */
+    ArrowheadHTTPSClient& getArrowheadHTTPSClient();
 
     /**
      * Starts the operation of the library

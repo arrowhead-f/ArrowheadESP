@@ -14,10 +14,10 @@
 #include <ArduinoJson.h>
 
 // Header includes
-#include "Util.h"
+#include "../Util/Util.h"
 
 // Datastructures
-#include "dataStructures.h"
+#include "../Util/dataStructures.h"
 
 const uint16_t JSON_SIZE = 512;
 

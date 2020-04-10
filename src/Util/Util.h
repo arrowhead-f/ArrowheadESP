@@ -5,7 +5,7 @@
 #ifndef ARROWHEADESP_UTIL_H
 #define ARROWHEADESP_UTIL_H
 
-#include "FS.h" // magic include which enables Serial printing in library.
+#include <Arduino.h>
 
 #define DEBUG
 
