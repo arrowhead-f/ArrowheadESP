@@ -42,13 +42,6 @@ private:
     int _srPort;
 
     /**
-     * System Name, Port
-     */
-    // TODO
-    const char* _systemName;
-    int _port;
-
-    /**
      * Reconnect properties
      */
     int _maxReconnectAttempts = 3;
@@ -156,7 +149,7 @@ public:
      * @param serviceDefinition
      * @return
      */
-    int serviceRegistryUnregister(const char *serviceDefinition);
+    int serviceRegistryUnregister(const char *systemName, int port, const char *serviceDefinition);
     /**
      * Unregister
      *
@@ -164,7 +157,7 @@ public:
      * @param response
      * @return
      */
-    int serviceRegistryUnregister(const char *serviceDefinition, String* response);
+    int serviceRegistryUnregister(const char *systemName, int port, const char *serviceDefinition, String* response);
 
     /**
      * Starts the operation of the library

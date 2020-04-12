@@ -53,11 +53,9 @@ int ArrowheadHTTPSClient::request(const char *method, const char *host, int port
 
     debugPrintln(String("Connection successful: ") + host + ":" + String(port));
 
-    // TODO pathWithQueryParams
-
     String pathWithQueryParams = path;
     if(query) {
-        pathWithQueryParams = pathWithQueryParams.concat(query);
+       pathWithQueryParams.concat(query);
     }
 
     String request = String(method) + " " + pathWithQueryParams + " HTTP/1.1\r\n";

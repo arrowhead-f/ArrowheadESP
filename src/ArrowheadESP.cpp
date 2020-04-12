@@ -146,15 +146,15 @@ int ArrowheadESP::serviceRegistryRegister(const char *body, String *response) {
 }
 
 // TODO test
-int ArrowheadESP::serviceRegistryUnregister(const char *serviceDefinition) {
-    String query = String("?system_name=") + _systemName + "&address=test" + "&port=" + _port + "&service_definition=" +
+int ArrowheadESP::serviceRegistryUnregister(const char *systemName, int port, const char *serviceDefinition) {
+    String query = String("?system_name=") + systemName + "&address=" + WiFi.localIP().toString() + "&port=" + port + "&service_definition=" +
                    serviceDefinition;
     return getArrowheadHTTPSClient().del(_srHost, _srPort, "/serviceregistry/unregister", query.c_str());
 }
 
 // TODO test
-int ArrowheadESP::serviceRegistryUnregister(const char *serviceDefinition, String *response) {
-    String query = String("?system_name=") + _systemName + "&address=test" + "&port=" + _port + "&service_definition=" +
+int ArrowheadESP::serviceRegistryUnregister(const char *systemName, int port, const char *serviceDefinition, String *response) {
+    String query = String("?system_name=") + systemName + "&address=" + WiFi.localIP().toString() + "&port=" + port + "&service_definition=" +
                    serviceDefinition;
     return getArrowheadHTTPSClient().del(_srHost, _srPort, "/serviceregistry/unregister", query.c_str(), response);
 }
