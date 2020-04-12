@@ -18,29 +18,42 @@ ArrowheadESP::ArrowheadESP() {
 
 bool ArrowheadESP::setupWiFi() {
     // We have to check that everything is available before proceeding
-    if(!getArrowheadESPFS().getNetInfo().ssid || !getArrowheadESPFS().getNetInfo().password) {
+    if (!getArrowheadESPFS().getNetInfo().ssid || !getArrowheadESPFS().getNetInfo().password) {
         return false;
     }
-    delay(10);
-    // We start by connecting to a WiFi network
-    debugPrintln(String("Connecting to ") + getArrowheadESPFS().getNetInfo().ssid);
-    // WiFi in Station mode
-    WiFi.mode(WIFI_STA);
-    // Initiate the WiFi connection
-    WiFi.begin(getArrowheadESPFS().getNetInfo().ssid, getArrowheadESPFS().getNetInfo().password);
+    while (_reconnectAttempt < _maxReconnectAttempts) {
+        debugPrintln(String("Connection attempt: ") + (_reconnectAttempt + 1) + " of " + _maxReconnectAttempts);
+        WiFi.disconnect();
+        delay(10);
+        // We start by connecting to a WiFi network
+        debugPrintln(String("Connecting to ") + getArrowheadESPFS().getNetInfo().ssid);
+        // WiFi in Station mode
+        WiFi.mode(WIFI_STA);
+        // Initiate the WiFi connection
+        WiFi.begin(getArrowheadESPFS().getNetInfo().ssid, getArrowheadESPFS().getNetInfo().password);
 
-    // Wait until not connected
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+        _chrono.restart();
+        // Wait until not connected
+        while (WiFi.status() != WL_CONNECTED && !_chrono.hasPassed(5000)) {
+            delay(500);
+            Serial.print(".");
+        }
+
+        if (WiFi.status() == WL_CONNECTED) {
+            debugPrintln("");
+            debugPrintln("WiFi connected");
+            debugPrint("IP address: ");
+            debugPrintln(WiFi.localIP());
+            _reconnectAttempt = 0;
+            return true;
+        } else {
+            debugPrintln(String("\nCould not connect to: ") + getArrowheadESPFS().getNetInfo().ssid);
+            debugPrintln();
+            _reconnectAttempt++;
+        }
     }
-
-    debugPrintln("");
-    debugPrintln("WiFi connected");
-    debugPrint("IP address: ");
-    debugPrintln(WiFi.localIP());
-
-    return true;
+    _reconnectAttempt = 0;
+    return false;
 }
 
 bool ArrowheadESP::setupCertificates() {
@@ -58,16 +71,16 @@ bool ArrowheadESP::setupCertificates() {
     // Setting the request timeout
     getArrowheadHTTPSClient().getWiFiClientSecure().setTimeout(5000);
     // Setting the buffer sizes
-    getArrowheadHTTPSClient().getWiFiClientSecure().setBufferSizes(512,512);
+    getArrowheadHTTPSClient().getWiFiClientSecure().setBufferSizes(512, 512);
 
     // Disable X509 Certificate verification
-    if(getArrowheadESPFS().getSSLInfo().insecure){
+    if (getArrowheadESPFS().getSSLInfo().insecure) {
         getArrowheadHTTPSClient().getWiFiClientSecure().setInsecure();
         debugPrintln("Disabled CA verification");
     }
 
     // Load CA certificate
-    if(getArrowheadHTTPSClient().getWiFiClientSecure().loadCACert(getArrowheadESPFS().getCA())){
+    if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCACert(getArrowheadESPFS().getCA())) {
         debugPrintln("CA cert loaded");
     } else {
         debugPrintln("CA cert failed");
@@ -75,7 +88,7 @@ bool ArrowheadESP::setupCertificates() {
     delay(1000);
 
     // Load Client certificate
-    if(getArrowheadHTTPSClient().getWiFiClientSecure().loadCertificate(getArrowheadESPFS().getCl())){
+    if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCertificate(getArrowheadESPFS().getCl())) {
         debugPrintln("Client cert loaded");
     } else {
         debugPrintln("Client cert failed");
@@ -83,7 +96,7 @@ bool ArrowheadESP::setupCertificates() {
     delay(1000);
 
     // Load Private key
-    if(getArrowheadHTTPSClient().getWiFiClientSecure().loadPrivateKey(getArrowheadESPFS().getPK())){
+    if (getArrowheadHTTPSClient().getWiFiClientSecure().loadPrivateKey(getArrowheadESPFS().getPK())) {
         debugPrintln("Private key loaded");
     } else {
         debugPrintln("Private key failed");
@@ -95,11 +108,11 @@ bool ArrowheadESP::setupCertificates() {
 // Public functions
 // #######################################
 
-ArrowheadESPFS& ArrowheadESP::getArrowheadESPFS() {
+ArrowheadESPFS &ArrowheadESP::getArrowheadESPFS() {
     return _arrowheadEspFs;
 }
 
-ArrowheadHTTPSClient& ArrowheadESP::getArrowheadHTTPSClient() {
+ArrowheadHTTPSClient &ArrowheadESP::getArrowheadHTTPSClient() {
     return _httpsClient;
 }
 
@@ -116,25 +129,42 @@ int ArrowheadESP::serviceRegistryEcho(String *response) {
     return getArrowheadHTTPSClient().get(_srHost, _srPort, "/serviceregistry/echo", NULL, response);
 }
 
-int ArrowheadESP::serviceRegistryQuery(const char* body) {
+int ArrowheadESP::serviceRegistryQuery(const char *body) {
     return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/query", body);
 }
 
-int ArrowheadESP::serviceRegistryQuery(const char* body, String *response) {
+int ArrowheadESP::serviceRegistryQuery(const char *body, String *response) {
     return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/query", body, response);
 }
 
-int ArrowheadESP::serviceRegistryRegister(const char* body) {
+int ArrowheadESP::serviceRegistryRegister(const char *body) {
     return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/register", body);
 }
 
-int ArrowheadESP::serviceRegistryRegister(const char* body, String *response) {
+int ArrowheadESP::serviceRegistryRegister(const char *body, String *response) {
     return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/register", body, response);
 }
 
-bool ArrowheadESP::begin(){
+// TODO test
+int ArrowheadESP::serviceRegistryUnregister(const char *serviceDefinition) {
+    String query = String("?system_name=") + _systemName + "&address=test" + "&port=" + _port + "&service_definition=" +
+                   serviceDefinition;
+    return getArrowheadHTTPSClient().del(_srHost, _srPort, "/serviceregistry/unregister", query.c_str());
+}
+
+// TODO test
+int ArrowheadESP::serviceRegistryUnregister(const char *serviceDefinition, String *response) {
+    String query = String("?system_name=") + _systemName + "&address=test" + "&port=" + _port + "&service_definition=" +
+                   serviceDefinition;
+    return getArrowheadHTTPSClient().del(_srHost, _srPort, "/serviceregistry/unregister", query.c_str(), response);
+}
+
+bool ArrowheadESP::begin() {
     debugPrintln("ArrowheadESP - Begin");
-    setupWiFi();
+    // Cannot proceed without WiFi connection
+    if (!setupWiFi()) {
+        return false;
+    }
     delay(1000);
     setupCertificates();
 
@@ -142,5 +172,9 @@ bool ArrowheadESP::begin(){
 }
 
 int ArrowheadESP::loop() {
-    // TODO
+    // We have to check that everything is available before proceeding
+    if (WiFi.status() != WL_CONNECTED) {
+         return setupWiFi();
+    }
+    return -1;
 }

@@ -37,7 +37,10 @@ public:
     int post(const char* address, int port, const char* path, const char* body);
     int post(const char* address, int port, const char* path, const char* body, String* response);
 
-    // TODO patch, put, delete
+    int del(const char* address, int port, const char* path, const char* query);
+    int del(const char* address, int port, const char* path, const char* query, String* response);
+
+    // TODO patch, put
 };
 
 

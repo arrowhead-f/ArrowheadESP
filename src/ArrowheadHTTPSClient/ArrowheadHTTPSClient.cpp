@@ -36,18 +36,31 @@ int ArrowheadHTTPSClient::post(const char *address, int port, const char *path, 
     return request("POST", address, port, path, NULL, body, response);
 }
 
+int ArrowheadHTTPSClient::del(const char *address, int port, const char *path, const char *query) {
+    return request("DELETE", address, port, path, query, NULL, NULL);
+}
+
+int ArrowheadHTTPSClient::del(const char *address, int port, const char *path, const char *query, String *response) {
+    return request("DELETE", address, port, path, query, NULL, response);
+}
+
 int ArrowheadHTTPSClient::request(const char *method, const char *host, int port, const char *path,
                                   const char *query, const char *body, String *response) {
     if (!_wiFiClientSecure.connect(host, port)) {
-        debugPrintln(String("Connection failed: ") + host + String(port));
+        debugPrintln(String("Connection failed: ") + host + ":" + String(port));
         return 0;
     }
 
-    debugPrintln(String("Connection successful: ") + host + ":"+ String(port));
+    debugPrintln(String("Connection successful: ") + host + ":" + String(port));
 
     // TODO pathWithQueryParams
 
-    String request = String(method) + " " + String(path) + " HTTP/1.1\r\n";
+    String pathWithQueryParams = path;
+    if(query) {
+        pathWithQueryParams = pathWithQueryParams.concat(query);
+    }
+
+    String request = String(method) + " " + pathWithQueryParams + " HTTP/1.1\r\n";
 /*  TODO header support
     for(int i=0; i<num_headers; i++){
         request += String(headers[i]) + "\r\n";

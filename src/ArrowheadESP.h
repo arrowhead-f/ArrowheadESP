@@ -17,6 +17,7 @@
 // Library includes
 #include <NTPClient.h>
 #include <WiFiUdp.h>
+#include <Chrono.h>
 
 // Header Includes
 #include "ArrowheadESPFS/ArrowheadESPFS.h"
@@ -41,11 +42,28 @@ private:
     int _srPort;
 
     /**
+     * System Name, Port
+     */
+    // TODO
+    const char* _systemName;
+    int _port;
+
+    /**
+     * Reconnect properties
+     */
+    int _maxReconnectAttempts = 3;
+    int _reconnectAttempt = 0;
+
+    /**
      * UDP capability
      */
     WiFiUDP _ntpUDP;
     // NTPClient timeClient(ntpUDP); not possible :(
 
+    /**
+     * Chronometer
+     */
+     Chrono _chrono;
     /**
      * Sets up the connection to the WiFi network
      *
@@ -132,8 +150,21 @@ public:
      * @return
      */
     int serviceRegistryRegister(const char *body, String* response);
-    // TODO
-    int serviceRegistryUnregister();
+    /**
+     * Unregister
+     *
+     * @param serviceDefinition
+     * @return
+     */
+    int serviceRegistryUnregister(const char *serviceDefinition);
+    /**
+     * Unregister
+     *
+     * @param serviceDefinition
+     * @param response
+     * @return
+     */
+    int serviceRegistryUnregister(const char *serviceDefinition, String* response);
 
     /**
      * Starts the operation of the library
