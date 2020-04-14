@@ -90,6 +90,12 @@ public:
     ArrowheadHTTPSClient& getArrowheadHTTPSClient();
 
     /**
+     * Returns the current IP address
+     * @return
+     */
+    String getIP();
+
+    /**
      * Sets the host and port of the Service Registry
      *
      * @param host
