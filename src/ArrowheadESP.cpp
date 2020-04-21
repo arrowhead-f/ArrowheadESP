@@ -85,7 +85,7 @@ bool ArrowheadESP::setupCertificates() {
     } else {
         debugPrintln("CA cert failed");
     }
-    delay(1000);
+    //delay(1000);
 
     // Load Client certificate
     if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCertificate(getArrowheadESPFS().getCl())) {
@@ -93,7 +93,7 @@ bool ArrowheadESP::setupCertificates() {
     } else {
         debugPrintln("Client cert failed");
     }
-    delay(1000);
+    //delay(1000);
 
     // Load Private key
     if (getArrowheadHTTPSClient().getWiFiClientSecure().loadPrivateKey(getArrowheadESPFS().getPK())) {
@@ -167,7 +167,7 @@ bool ArrowheadESP::begin() {
     if (!setupWiFi()) {
         return false;
     }
-    delay(1000);
+    //delay(1000);
     setupCertificates();
 
     return true;

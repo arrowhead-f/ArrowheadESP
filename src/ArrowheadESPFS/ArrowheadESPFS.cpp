@@ -24,7 +24,10 @@ ArrowheadESPFS::ArrowheadESPFS() {
 // #######################################
 
 bool ArrowheadESPFS::loadNetworkConfig(const char *fileName) {
-    File networkConfig = loadFile(fileName);
+    File networkConfig;
+    if(!loadFile(fileName, networkConfig)){
+        return false;
+    }
 
     StaticJsonDocument <JSON_SIZE> doc;
     if (!deserializeJSONFromFile(networkConfig, &doc)) {
@@ -52,7 +55,10 @@ bool ArrowheadESPFS::loadNetworkConfig(const char *fileName) {
 }
 
 bool ArrowheadESPFS::loadSSLConfig(const char *fileName) {
-    File sslConfig = loadFile(fileName);
+    File sslConfig;
+    if(!loadFile(fileName, sslConfig)){
+        return false;
+    }
 
     StaticJsonDocument<JSON_SIZE> doc;
     if(!deserializeJSONFromFile(sslConfig, &doc)) {
@@ -80,37 +86,59 @@ bool ArrowheadESPFS::loadSSLConfig(const char *fileName) {
             filenameCl : _filenameCl
     };
 
-    // load the certificates
-    _ca = loadFile(_filenameCa);
-    _pk = loadFile(_filenamePk);
-    _cl = loadFile(_filenameCl);
-
     debugPrintln("Reading config file with values: ");
     debugPrintln(String("CA filename: ") + _sslData.filenameCa);
     debugPrintln(String("PK filename: ") + _sslData.filenamePk);
     debugPrintln(String("CL filename: ") + _sslData.filenameCl);
     debugPrintln(String("Insecure: ") + _sslData.insecure);
-    return true;
+
+    int certLoadSuccess = 0;
+
+    // load the certificates
+    if(loadFile(_filenameCa, _ca)){
+        debugPrintln("CA cert loaded from SPIFFS!");
+        certLoadSuccess++;
+    } else {
+        debugPrintln("CA cert couldn't be loaded from SPIFFS!");
+    }
+    if(loadFile(_filenamePk, _pk)){
+        debugPrintln("PK loaded from SPIFFS!");
+        certLoadSuccess++;
+    } else {
+        debugPrintln("PK couldn't be loaded from SPIFFS!");
+    }
+    if(loadFile(_filenameCl, _cl)){
+        debugPrintln("Client cert loaded from SPIFFS!");
+        certLoadSuccess++;
+    } else {
+        debugPrintln("Client cert couldn't be loaded from SPIFFS!");
+    }
+
+    return certLoadSuccess == 3;
 }
 
-File ArrowheadESPFS::loadFile(const char *fileName) {
+bool ArrowheadESPFS::loadFile(const char *fileName, File &file) {
+    if(!SPIFFS.exists(String("/") + fileName)){
+        debugPrintln(String("File ") + fileName + " does not exist!");
+        return false;
+    }
     debugPrintln(String("Opening file: ") + fileName);
     //open the file as read only
-    File file = SPIFFS.open(String("/") + fileName, "r");
+    file = SPIFFS.open(String("/") + fileName, "r");
 
     //check to make sure, opening was possible
     if (!file) {
         debugPrintln(String("Failed to open ") + fileName);
         file.close();
+        return false;
     } else {
         debugPrintln(String("Successfully opened ") + fileName);
+        return true;
     }
-    // could this be improved?
-    return file;
 }
 
 int8_t ArrowheadESPFS::validateConfig(JsonDocument *doc) {
-    if (doc->size() == 0) {
+    if (doc == NULL || doc->size() == 0) {
         return NO_CONFIG;
     }
 
@@ -131,7 +159,7 @@ int8_t ArrowheadESPFS::validateConfig(JsonDocument *doc) {
 }
 
 int8_t ArrowheadESPFS::validateSSLConfig(JsonDocument *doc) {
-    if(doc->size() == 0) {
+    if(doc == NULL || doc->size() == 0) {
         return NO_CONFIG;
     }
 
@@ -160,6 +188,10 @@ int8_t ArrowheadESPFS::validateSSLConfig(JsonDocument *doc) {
 }
 
 bool ArrowheadESPFS::deserializeJSONFromFile(File file, JsonDocument *doc) {
+    if(doc == NULL){
+        return false;
+    }
+
     size_t size = file.size();
     debugPrintln(String("JSON File Size: ") + size);
     if (size > JSON_SIZE) {

@@ -77,11 +77,11 @@ private:
 
     /**
      * Loads a file from SPIFFS
-     *
      * @param fileName
-     * @return the loaded File
+     * @param file
+     * @return success of loading the file
      */
-    File loadFile(const char *fileName);
+    bool loadFile(const char *fileName, File& file);
 
     /**
      * Validates the network configuration

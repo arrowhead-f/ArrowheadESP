@@ -78,7 +78,7 @@ int ArrowheadHTTPSClient::request(const char *method, const char *host, int port
         request += String(body);
         request += "\r\n\r\n";
     }
-    delay(0);
+
     _wiFiClientSecure.print(request);
 
     //make sure you write all those bytes.
@@ -90,7 +90,7 @@ int ArrowheadHTTPSClient::request(const char *method, const char *host, int port
     //cleanup
     // TODO num_headers = 0;
     _wiFiClientSecure.stop();
-    delay(50);
+    // delay(50);
 
     return statusCode;
 }
