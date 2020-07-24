@@ -8,6 +8,9 @@
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266WebServerSecure.h>
+#include <ESP8266mDNS.h>
 #endif
 
 #ifdef ESP32
@@ -34,6 +37,16 @@ private:
      * ArrowheadHTTPSClient instance
      */
     ArrowheadHTTPSClient _httpsClient;
+
+    /**
+     * ESP8266WebServerSecure instance
+     */
+    BearSSL::ESP8266WebServerSecure _secureWebServer;
+
+    /**
+     * ESP8266WebServer instance
+     */
+    ESP8266WebServer _webServer;
 
     /**
      * ServiceRegistry host and port
@@ -69,6 +82,12 @@ private:
      * @return
      */
     bool setupCertificates();
+    /**
+     * Sets up the secure web server with certificates
+     *
+     * @return
+     */
+    bool setupSecureWebServer();
 public:
     /**
      * Default constructor of the library
@@ -88,6 +107,27 @@ public:
      * @return
      */
     ArrowheadHTTPSClient& getArrowheadHTTPSClient();
+
+    /**
+     * Returns the instance of the ESP8266WebServerSecure
+     *
+     * @return
+     */
+    BearSSL::ESP8266WebServerSecure& getSecureWebServer();
+
+    /**
+     * Returns the instance of the ESP8266WebServer
+     *
+     * @return
+     */
+    ESP8266WebServer& getWebServer();
+
+    /**
+     * Use secure web server
+     *
+     * @return
+     */
+    void useSecureWebServer();
 
     /**
      * Returns the current IP address
