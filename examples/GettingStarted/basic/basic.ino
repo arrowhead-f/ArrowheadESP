@@ -24,8 +24,14 @@ void setup() {
   Serial.begin(115200);
   Arrowhead.getArrowheadESPFS().loadConfigFile("netConfig.json"); // loads network config from file system
   Arrowhead.getArrowheadESPFS().loadSSLConfigFile("sslConfig.json"); // loads ssl config from file system
+  Arrowhead.getArrowheadESPFS().loadProviderConfigFile("providerConfig.json"); // loads provider config from file system
+  //Arrowhead.useSecureWebServer(); // call secure configuration if you plan to use secure web server
 
-  Arrowhead.setServiceRegistryAddress("192.168.0.157", 8443); // Set the Address and port of the Service Registry.
+  // Set the Address and port of the Service Registry.
+  Arrowhead.setServiceRegistryAddress(
+    Arrowhead.getArrowheadESPFS().getProviderInfo().serviceRegistryAddress,
+    Arrowhead.getArrowheadESPFS().getProviderInfo().serviceRegistryPort
+  );
 
   bool startupSuccess = Arrowhead.begin(); // true of connection to WiFi and loading Certificates is successful
   if(startupSuccess){
