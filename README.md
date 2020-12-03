@@ -25,12 +25,23 @@ Then generate `der` certificates from it with these example commands:
 openssl pkcs12 -in securetemperaturesensor.testcloud2.aitia.arrowhead.eu.p12 -out cacert.pem  -cacerts -nokeys
 openssl pkcs12 -in securetemperaturesensor.testcloud2.aitia.arrowhead.eu.p12 -out clcert.pem  -clcerts -nokeys
 openssl pkcs12 -in securetemperaturesensor.testcloud2.aitia.arrowhead.eu.p12 -out privkey.pem -nocerts
+openssl pkcs12 -in securetemperaturesensor.testcloud2.aitia.arrowhead.eu.p12 -nocerts -out serverkey.pem
 openssl rsa -in privkey.pem -pubout -out pubkey.pem
 
 openssl x509 -in clcert.pem -out cert.der -outform DER 
 openssl rsa -in privkey.pem -out private.der -outform DER
 openssl x509 -in cacert.pem -out ca.der -outform DER
 ```
+
+Copy the contents of the *pubkey.pem* file to the *sslConfig.json* file (located in the *data* directory) as it is demonstrated in the example config file (as the value of the *publicKey* field).
+
+The library will use the following certificate files: *ca.der*, *cert.der*, *private.der*, *clcert.pem*, *serverkey.pem*. The remaining can be deleted after the generation process.
+
+## Configure adapter
+
+Before connecting to an Arrowhead Cloud instance, you need to specify the address of the cloud and give a name to your adapter which will identify the Arduino device in the cloud. Both can be done in the *providerConfig.json* file (located in the *data* directory).
+
+For a use-case example please refer to the following repository: [adapter-quick-demo-dev](https://github.com/arrowhead-f/adapter-quick-demo-dev)
 
 This library uses ideas derived from: 
 * https://github.com/ItKindaWorks/ESPHelper

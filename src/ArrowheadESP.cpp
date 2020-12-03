@@ -34,7 +34,7 @@ bool ArrowheadESP::setupWiFi() {
 
         _chrono.restart();
         // Wait until not connected
-        while (WiFi.status() != WL_CONNECTED && !_chrono.hasPassed(5000)) {
+        while (WiFi.status() != WL_CONNECTED && !_chrono.hasPassed(10000)) {
             delay(500);
             Serial.print(".");
         }
@@ -79,29 +79,73 @@ bool ArrowheadESP::setupCertificates() {
         debugPrintln("Disabled CA verification");
     }
 
-    // Load CA certificate
-    if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCACert(getArrowheadESPFS().getCA())) {
-        debugPrintln("CA cert loaded");
-    } else {
-        debugPrintln("CA cert failed");
-    }
-    //delay(1000);
+    if(getArrowheadESPFS().loadClientCertificateFiles()) {
 
-    // Load Client certificate
-    if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCertificate(getArrowheadESPFS().getCl())) {
-        debugPrintln("Client cert loaded");
-    } else {
-        debugPrintln("Client cert failed");
-    }
-    //delay(1000);
+        // Load CA certificate
+        if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCACert(getArrowheadESPFS().getCA())) {
+            debugPrintln("CA cert loaded");
+        } else {
+            debugPrintln("CA cert failed");
+        }
+        //delay(1000);
 
-    // Load Private key
-    if (getArrowheadHTTPSClient().getWiFiClientSecure().loadPrivateKey(getArrowheadESPFS().getPK())) {
-        debugPrintln("Private key loaded");
-    } else {
-        debugPrintln("Private key failed");
+        // Load Client certificate
+        if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCertificate(getArrowheadESPFS().getCl())) {
+            debugPrintln("Client cert loaded");
+        } else {
+            debugPrintln("Client cert failed");
+        }
+        //delay(1000);
+
+        // Load Private key
+        if (getArrowheadHTTPSClient().getWiFiClientSecure().loadPrivateKey(getArrowheadESPFS().getPK())) {
+            debugPrintln("Private key loaded");
+        } else {
+            debugPrintln("Private key failed");
+        }
+
+        // close client certificate files
+        getArrowheadESPFS().closeClientCertificateFiles();
+
     }
+    else {
+        Serial.println("Client certificate files could not be loaded.");
+    }
+
     delay(1000);
+}
+
+bool ArrowheadESP::setupSecureWebServer() {
+    if(getArrowheadESPFS().loadServerCertificateFiles()) { // starting in SECURE mode
+
+        static char* serverCert;
+        static char* serverKey;
+        unsigned int fileSize;
+
+        fileSize = getArrowheadESPFS().getSc().size(); 
+        serverCert = (char*)malloc(fileSize + 1);
+        getArrowheadESPFS().getSc().readBytes(serverCert, fileSize);
+        serverCert[fileSize] = '\0';
+
+        fileSize = getArrowheadESPFS().getSk().size(); 
+        serverKey = (char*)malloc(fileSize + 1);
+        getArrowheadESPFS().getSk().readBytes(serverKey, fileSize);
+        serverKey[fileSize] = '\0';
+
+        // close server certificate files
+        getArrowheadESPFS().closeServerCertificateFiles();
+
+        getSecureWebServer().getServer().setRSACert(new BearSSL::X509List(serverCert), new BearSSL::PrivateKey(serverKey));
+
+        free(serverCert);
+        free(serverKey);
+
+        Serial.println("SECURE web server is configured.");
+
+    }
+    else {
+       Serial.println("Server certificate files could not be loaded."); 
+    }
 }
 
 // #######################################
@@ -114,6 +158,14 @@ ArrowheadESPFS &ArrowheadESP::getArrowheadESPFS() {
 
 ArrowheadHTTPSClient &ArrowheadESP::getArrowheadHTTPSClient() {
     return _httpsClient;
+}
+
+BearSSL::ESP8266WebServerSecure &ArrowheadESP::getSecureWebServer() {
+    return _secureWebServer;
+}
+
+ESP8266WebServer &ArrowheadESP::getWebServer() {
+    return _webServer;
 }
 
 String ArrowheadESP::getIP() {
@@ -170,7 +222,17 @@ bool ArrowheadESP::begin() {
     //delay(1000);
     setupCertificates();
 
+    if (MDNS.begin("esp8266")) {
+        Serial.println("MDNS responder started");
+    }
+
     return true;
+}
+
+void ArrowheadESP::useSecureWebServer() {
+    if(setupSecureWebServer()) {
+        Serial.println("Using HTTPS web server.");
+    }
 }
 
 int ArrowheadESP::loop() {
@@ -178,5 +240,8 @@ int ArrowheadESP::loop() {
     if (WiFi.status() != WL_CONNECTED) {
          return setupWiFi();
     }
+    getSecureWebServer().handleClient();
+    getWebServer().handleClient();
+    MDNS.update();
     return -1;
 }
