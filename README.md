@@ -1,6 +1,6 @@
 # ArrowheadESP
 
-The goal of this library is to make interfacing with the Arrowhead Framework easy with the ESP8266 and ESP32 modules.
+The goal of this library is to make interfacing with the Arrowhead Framework easy with the ESP8266 module.
 
 Please take a look at the examples included with this library to get an idea of how it works.
 
@@ -9,13 +9,13 @@ Please take a look at the examples included with this library to get an idea of 
 The library does require the use of these libraries, so make sure they're installed as well:
 * [Chrono](https://github.com/SofaPirate/Chrono)
 * [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+* [NTPClient](https://github.com/arduino-libraries/NTPClient)
 
 These libraries can be installed via the Library Manager. Since Arduino IDE 1.8.10, it can automatically install them. 
 
 In addition to those libraries, make sure that you have the ESP core files installed for your platform.
 
 * [ESP8266 Arduino Core](https://github.com/esp8266/Arduino)
-* [ESP32 Arduino Core](https://github.com/espressif/arduino-esp32)
 
 ## Generate certificate
 
