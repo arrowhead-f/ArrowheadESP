@@ -1,32 +1,33 @@
 //
 // Created by Szvetlin Tanyi on 2020. 04. 09.
+// Modified by Sébastien Canet on 2021. 10. 12.
 //
 
-#ifndef ARROWHEADESP_ARROWHEADHTTPSCLIENT_H
-#define ARROWHEADESP_ARROWHEADHTTPSCLIENT_H
+#ifndef ARROWHEADESP_ARROWHEADHTTPCLIENT_H
+#define ARROWHEADESP_ARROWHEADHTTPCLIENT_H
 
 // Library includes
-#include <WiFiClientSecure.h>
+#include <WiFiClient.h>
 #include "../Util/Util.h"
 
-class ArrowheadHTTPSClient {
+class ArrowheadHTTPClient {
 private:
     /**
      * SSL capable HTTP client
      */
-    WiFiClientSecure _wiFiClientSecure;
+    WiFiClient _wiFiClient;
 public:
     /**
      * Default constructor of the class
      */
-    ArrowheadHTTPSClient();
+    ArrowheadHTTPClient();
 
     /**
     * Returns the instance of the HTTP client
     *
     * @return
     */
-    WiFiClientSecure& getWiFiClientSecure();
+    WiFiClient& getWiFiClient();
 
     int request(const char* method, const char* host, int port, const char* path, const char* query, const char* body, String* response);
     int readResponse(String* response);
@@ -43,4 +44,4 @@ public:
     // TODO patch, put
 };
 
-#endif //ARROWHEADESP_ARROWHEADHTTPSCLIENT_H
+#endif //ARROWHEADESP_ARROWHEADHTTPCLIENT_H
