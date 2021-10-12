@@ -24,6 +24,7 @@
 
 // Header Includes
 #include "ArrowheadESPFS/ArrowheadESPFS.h"
+#include "ArrowheadHTTPClient/ArrowheadHTTPClient.h"
 #include "ArrowheadHTTPSClient/ArrowheadHTTPSClient.h"
 
 class ArrowheadESP {
@@ -32,6 +33,11 @@ private:
      * ArrowheadESPFS instance
      */
     ArrowheadESPFS _arrowheadEspFs;
+
+    /**
+     * ArrowheadHTTPClient instance
+     */
+    ArrowheadHTTPClient _httpClient;
 
     /**
      * ArrowheadHTTPSClient instance
@@ -81,7 +87,7 @@ private:
      *
      * @return
      */
-    bool setupCertificates();
+    bool setupCertificates(bool secureMode);
     /**
      * Sets up the secure web server with certificates
      *
@@ -100,6 +106,13 @@ public:
      * @return
      */
     ArrowheadESPFS& getArrowheadESPFS();
+
+    /**
+     * Returns the instance of the ArrowheadHTTPClient
+     *
+     * @return
+     */
+    ArrowheadHTTPClient& getArrowheadHTTPClient();
 
     /**
      * Returns the instance of the ArrowheadHTTPSClient
@@ -151,21 +164,21 @@ public:
      * Echo
      * @return
      */
-    int serviceRegistryEcho();
+    int serviceRegistryEcho(bool secureMode);
     /**
      * Echo
      *
      * @param response
      * @return
      */
-    int serviceRegistryEcho(String* response);
+    int serviceRegistryEcho(bool secureMode, String* response);
     /**
      * Query
      *
      * @param body
      * @return
      */
-    int serviceRegistryQuery(const char *body);
+    int serviceRegistryQuery(bool secureMode, const char *body);
     /**
      * Query
      *
@@ -173,14 +186,14 @@ public:
      * @param response
      * @return
      */
-    int serviceRegistryQuery(const char *body, String* response);
+    int serviceRegistryQuery(bool secureMode, const char *body, String* response);
     /**
      * Register
      *
      * @param body
      * @return
      */
-    int serviceRegistryRegister(const char *body);
+    int serviceRegistryRegister(bool secureMode, const char *body);
     /**
      * Register
      *
@@ -188,14 +201,14 @@ public:
      * @param response
      * @return
      */
-    int serviceRegistryRegister(const char *body, String* response);
+    int serviceRegistryRegister(bool secureMode, const char *body, String* response);
     /**
      * Unregister
      *
      * @param serviceDefinition
      * @return
      */
-    int serviceRegistryUnregister(const char *systemName, int port, const char *serviceDefinition);
+    int serviceRegistryUnregister(bool secureMode, const char *systemName, int port, const char *serviceDefinition);
     /**
      * Unregister
      *
@@ -203,14 +216,14 @@ public:
      * @param response
      * @return
      */
-    int serviceRegistryUnregister(const char *systemName, int port, const char *serviceDefinition, String* response);
+    int serviceRegistryUnregister(bool secureMode, const char *systemName, int port, const char *serviceDefinition, String* response);
 
     /**
      * Starts the operation of the library
      *
      * @return
      */
-    bool begin();
+    bool begin(bool secureMode);
 
     /**
      * Keeps all connection alive
@@ -219,6 +232,5 @@ public:
      */
     int loop();
 };
-
 
 #endif //ARROWHEADESP_ARROWHEADESP_H

@@ -56,9 +56,8 @@ bool ArrowheadESP::setupWiFi() {
     return false;
 }
 
-bool ArrowheadESP::setupCertificates() {
-    // Set up the NTPClient. It's constructor needs an UDP client. If somebody has a better solution then declaring it here, let me know.
-
+bool ArrowheadESP::setupCertificates(bool secureMode) {
+    
     // By default 'pool.ntp.org' is used with 60 seconds update interval and
     // no offset
     NTPClient timeClient(_ntpUDP);
@@ -66,52 +65,53 @@ bool ArrowheadESP::setupCertificates() {
     while (!timeClient.update()) {
         timeClient.forceUpdate();
     }
-    // Set the proper time for Certificate validation
-    getArrowheadHTTPSClient().getWiFiClientSecure().setX509Time(timeClient.getEpochTime());
-    // Setting the request timeout
-    getArrowheadHTTPSClient().getWiFiClientSecure().setTimeout(5000);
-    // Setting the buffer sizes
-    getArrowheadHTTPSClient().getWiFiClientSecure().setBufferSizes(512, 512);
+    if (secureMode) {
+        // Set the proper time for Certificate validation
+        getArrowheadHTTPSClient().getWiFiClientSecure().setX509Time(timeClient.getEpochTime());
+        // Setting the request timeout
+        getArrowheadHTTPSClient().getWiFiClientSecure().setTimeout(5000);
+        // Setting the buffer sizes
+        getArrowheadHTTPSClient().getWiFiClientSecure().setBufferSizes(512, 512);
 
-    // Disable X509 Certificate verification
-    if (getArrowheadESPFS().getSSLInfo().insecure) {
-        getArrowheadHTTPSClient().getWiFiClientSecure().setInsecure();
-        debugPrintln("Disabled CA verification");
-    }
-
-    if(getArrowheadESPFS().loadClientCertificateFiles()) {
-
-        // Load CA certificate
-        if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCACert(getArrowheadESPFS().getCA())) {
-            debugPrintln("CA cert loaded");
-        } else {
-            debugPrintln("CA cert failed");
-        }
-        //delay(1000);
-
-        // Load Client certificate
-        if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCertificate(getArrowheadESPFS().getCl())) {
-            debugPrintln("Client cert loaded");
-        } else {
-            debugPrintln("Client cert failed");
-        }
-        //delay(1000);
-
-        // Load Private key
-        if (getArrowheadHTTPSClient().getWiFiClientSecure().loadPrivateKey(getArrowheadESPFS().getPK())) {
-            debugPrintln("Private key loaded");
-        } else {
-            debugPrintln("Private key failed");
+        // Disable X509 Certificate verification
+        if (getArrowheadESPFS().getSSLInfo().insecure) {
+            getArrowheadHTTPSClient().getWiFiClientSecure().setInsecure();
+            debugPrintln("Disabled CA verification");
         }
 
-        // close client certificate files
-        getArrowheadESPFS().closeClientCertificateFiles();
+        if(getArrowheadESPFS().loadClientCertificateFiles()) {
 
-    }
-    else {
-        Serial.println("Client certificate files could not be loaded.");
-    }
+            // Load CA certificate
+            if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCACert(getArrowheadESPFS().getCA())) {
+                debugPrintln("CA cert loaded");
+            } else {
+                debugPrintln("CA cert failed");
+            }
+            //delay(1000);
 
+            // Load Client certificate
+            if (getArrowheadHTTPSClient().getWiFiClientSecure().loadCertificate(getArrowheadESPFS().getCl())) {
+                debugPrintln("Client cert loaded");
+            } else {
+                debugPrintln("Client cert failed");
+            }
+            //delay(1000);
+
+            // Load Private key
+            if (getArrowheadHTTPSClient().getWiFiClientSecure().loadPrivateKey(getArrowheadESPFS().getPK())) {
+                debugPrintln("Private key loaded");
+            } else {
+                debugPrintln("Private key failed");
+            }
+
+            // close client certificate files
+            getArrowheadESPFS().closeClientCertificateFiles();
+
+        }
+        else {
+            Serial.println("Client certificate files could not be loaded.");
+        }
+    }
     delay(1000);
 }
 
@@ -156,6 +156,10 @@ ArrowheadESPFS &ArrowheadESP::getArrowheadESPFS() {
     return _arrowheadEspFs;
 }
 
+ArrowheadHTTPClient &ArrowheadESP::getArrowheadHTTPClient() {
+    return _httpClient;
+}
+
 ArrowheadHTTPSClient &ArrowheadESP::getArrowheadHTTPSClient() {
     return _httpsClient;
 }
@@ -177,50 +181,74 @@ void ArrowheadESP::setServiceRegistryAddress(const char *host, int port) {
     this->_srPort = port;
 }
 
-int ArrowheadESP::serviceRegistryEcho() {
-    return getArrowheadHTTPSClient().get(_srHost, _srPort, "/serviceregistry/echo", NULL, NULL);
+int ArrowheadESP::serviceRegistryEcho(bool secureMode) {
+    if (secureMode)
+        return getArrowheadHTTPSClient().get(_srHost, _srPort, "/serviceregistry/echo", NULL, NULL);
+    else
+        return getArrowheadHTTPClient().get(_srHost, _srPort, "/serviceregistry/echo", NULL, NULL);
 }
 
-int ArrowheadESP::serviceRegistryEcho(String *response) {
-    return getArrowheadHTTPSClient().get(_srHost, _srPort, "/serviceregistry/echo", NULL, response);
+int ArrowheadESP::serviceRegistryEcho(bool secureMode, String *response) {
+    if (secureMode)
+        return getArrowheadHTTPSClient().get(_srHost, _srPort, "/serviceregistry/echo", NULL, response);
+    else
+        return getArrowheadHTTPClient().get(_srHost, _srPort, "/serviceregistry/echo", NULL, response);
 }
 
-int ArrowheadESP::serviceRegistryQuery(const char *body) {
-    return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/query", body);
+int ArrowheadESP::serviceRegistryQuery(bool secureMode, const char *body) {
+    if (secureMode)
+        return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/query", body);
+    else
+        return getArrowheadHTTPClient().post(_srHost, _srPort, "/serviceregistry/query", body);
 }
 
-int ArrowheadESP::serviceRegistryQuery(const char *body, String *response) {
-    return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/query", body, response);
+int ArrowheadESP::serviceRegistryQuery(bool secureMode, const char *body, String *response) {
+    if (secureMode)
+        return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/query", body, response);
+    else
+        return getArrowheadHTTPClient().post(_srHost, _srPort, "/serviceregistry/query", body, response);
 }
 
-int ArrowheadESP::serviceRegistryRegister(const char *body) {
-    return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/register", body);
+int ArrowheadESP::serviceRegistryRegister(bool secureMode, const char *body) {
+    if (secureMode)
+        return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/register", body);
+    else
+        return getArrowheadHTTPClient().post(_srHost, _srPort, "/serviceregistry/register", body);
 }
 
-int ArrowheadESP::serviceRegistryRegister(const char *body, String *response) {
-    return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/register", body, response);
+int ArrowheadESP::serviceRegistryRegister(bool secureMode, const char *body, String *response) {
+    if (secureMode)
+        return getArrowheadHTTPSClient().post(_srHost, _srPort, "/serviceregistry/register", body, response);
+    else
+        return getArrowheadHTTPClient().post(_srHost, _srPort, "/serviceregistry/register", body, response);
 }
 
-int ArrowheadESP::serviceRegistryUnregister(const char *systemName, int port, const char *serviceDefinition) {
+int ArrowheadESP::serviceRegistryUnregister(bool secureMode, const char *systemName, int port, const char *serviceDefinition) {
     String query = String("?system_name=") + systemName + "&address=" + WiFi.localIP().toString() + "&port=" + port + "&service_definition=" +
                    serviceDefinition;
-    return getArrowheadHTTPSClient().del(_srHost, _srPort, "/serviceregistry/unregister", query.c_str());
+    if (secureMode)
+        return getArrowheadHTTPSClient().del(_srHost, _srPort, "/serviceregistry/unregister", query.c_str());
+    else
+        return getArrowheadHTTPClient().del(_srHost, _srPort, "/serviceregistry/unregister", query.c_str());
 }
 
-int ArrowheadESP::serviceRegistryUnregister(const char *systemName, int port, const char *serviceDefinition, String *response) {
+int ArrowheadESP::serviceRegistryUnregister(bool secureMode, const char *systemName, int port, const char *serviceDefinition, String *response) {
     String query = String("?system_name=") + systemName + "&address=" + WiFi.localIP().toString() + "&port=" + port + "&service_definition=" +
                    serviceDefinition;
-    return getArrowheadHTTPSClient().del(_srHost, _srPort, "/serviceregistry/unregister", query.c_str(), response);
+    if (secureMode)
+        return getArrowheadHTTPSClient().del(_srHost, _srPort, "/serviceregistry/unregister", query.c_str(), response);
+    else
+        return getArrowheadHTTPClient().del(_srHost, _srPort, "/serviceregistry/unregister", query.c_str(), response);
 }
 
-bool ArrowheadESP::begin() {
+bool ArrowheadESP::begin(bool secureMode) {
     debugPrintln("ArrowheadESP - Begin");
     // Cannot proceed without WiFi connection
     if (!setupWiFi()) {
         return false;
     }
     //delay(1000);
-    setupCertificates();
+    setupCertificates(secureMode);
 
     if (MDNS.begin("esp8266")) {
         Serial.println("MDNS responder started");

@@ -11,13 +11,8 @@ ArrowheadESP Arrowhead;
 
 const char* systemName = "securetemperaturesensor"; // name of the system, must match the common name of the certificate
 int port = 8080; // doesn't really matter what number we type in, since it won't listen on it anyway
-const char* publicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAubjry6ja1CZUGtRV/0WX" \
-"C37s+mWgWJPtqJxMzaQPP+geZVlnm9QlDBAM+UW5Kjc1BWUPfCrVK6hAmHJQj7T2" \
-"v76/+uV+E8vkg4bFjmwutUENItaZGivxf8Fy1lEEGs0168w1YEvyvrljtaK6Vu3O" \
-"/Yum/KWHf2sGOEJv5xRTZy0HcfIDxXlXGEK43klrcrMAgp/AT59QosBh5zpyvK2K" \
-"hxeO44pFt+EwYtgFYQ2t0gZWnWzHt1e6Hj5/80SAJvWL8IUHcWNzc3BFXfjn503Q" \
-"kbLsSWnFC2uwi5tMdgiZd1zTSYrmkDfr4AMNZO8RxC0bCaM3MxUl+SnSLiPyO6yU" \
-"PwIDAQAB";
+const char* publicKey = "";
+String ArrowheadProviderIP = "91.161.102.110";
 
 void setup() {
   // put your setup code here, to run once:
@@ -33,10 +28,10 @@ void setup() {
     Arrowhead.getArrowheadESPFS().getProviderInfo().serviceRegistryPort
   );
 
-  bool startupSuccess = Arrowhead.begin(); // true of connection to WiFi and loading Certificates is successful
+  bool startupSuccess = Arrowhead.begin(false); // true of connection to WiFi and loading Certificates is successful
   if(startupSuccess){
     String response = "";
-    int statusCode = Arrowhead.serviceRegistryEcho(&response);
+    int statusCode = Arrowhead.serviceRegistryEcho(false, &response);
     Serial.print("Status code from server: ");
     Serial.println(statusCode);
     Serial.print("Response body from server: ");
@@ -44,10 +39,10 @@ void setup() {
     Serial.println("############################");
     Serial.println();
 
-    String serviceRegistryEntry = "{\"endOfValidity\":\"2020-12-05 12:00:00\",\"interfaces\":[\"HTTP-SECURE-SenML\"],\"providerSystem\":{\"address\":\" "+ Arrowhead.getIP() +"\",\"authenticationInfo\":\""+ publicKey +"\",\"port\":"+ port +",\"systemName\":\""+ systemName +"\"},\"secure\":\"CERTIFICATE\",\"serviceDefinition\":\"temperature\",\"serviceUri\":\"/\",\"version\":1}";  
+    String serviceRegistryEntry = "{\"endOfValidity\":\"2021-12-05 12:00:00\",\"interfaces\":[\"HTTP-INSECURE-SenML\"],\"providerSystem\":{\"address\":\" "+ ArrowheadProviderIP +"\",\"authenticationInfo\":\""+ publicKey +"\",\"port\":"+ port +",\"systemName\":\""+ systemName +"\"},\"secure\":\"NOT_SECURE\",\"serviceDefinition\":\"dhtesp1\",\"serviceUri\":\"/\",\"version\":1}";  
 
     response = "";
-    statusCode = Arrowhead.serviceRegistryRegister(serviceRegistryEntry.c_str(), &response);
+    statusCode = Arrowhead.serviceRegistryRegister(false, serviceRegistryEntry.c_str(), &response);
     Serial.print("Status code from server: ");
     Serial.println(statusCode);
     Serial.print("Response body from server: ");
